@@ -1,0 +1,72 @@
+---
+title: "US House Price Index"
+description: |
+  A new article created using the Distill format.
+author:
+  - name: Nick Rohrbaugh 
+    url: https://github.com/nrohr
+    affiliation: RStudio, PBC
+    affiliation_url: https://rstudio.com/
+date: "`r Sys.Date()`"
+output: distill::distill_article
+---
+
+
+```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(timetk)
+library(plotly)
+library(readxl)
+library(janitor)
+library(lubridate)
+
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, comment = NA)
+```
+
+
+# House Price Index
+
+Data is sourced from [FHFA Monthly Purchase-Only Index](https://www.fhfa.gov/DataTools/Downloads/Pages/House-Price-Index-Datasets.aspx#mpo) and begins in January 1991.
+
+<aside>
+This is a side note.
+</aside>
+
+```{r}
+url <- "https://www.fhfa.gov/DataTools/Downloads/Documents/HPI/HPI_PO_monthly_hist.xls"
+destfile <- "hpi.xls"
+curl::curl_download(url, destfile)
+hpi <- read_excel(destfile, skip = 3)
+
+hpi_wrangled <- hpi %>% 
+  clean_names() %>% 
+  slice(-1) %>%   # remove empty row
+  rename(date = month) %>%
+  mutate_if(is.numeric, round, digits = 2) %>%  # round all numeric columns to 2 digits
+  arrange(date) %>% 
+  select(date, usa_sa, usa_nsa)
+```
+
+## Seasonally Adjusted
+
+```{r}
+plot_time_series(hpi_wrangled, date, usa_sa, 
+                 .interactive = FALSE, 
+                 .smooth = FALSE, 
+                 .title = "US HPI - Seasonally Adjusted")
+```
+
+## Not Seasonally Adjusted
+
+```{r}
+plot_time_series(hpi_wrangled, date, usa_nsa, 
+                 .interactive = FALSE, 
+                 .smooth = FALSE, 
+                 .title = "US HPI - Not Seasonally Adjusted")
+```
+
+
+
+# Analysis details
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.

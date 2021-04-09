@@ -1,0 +1,78 @@
+---
+title: "Stock Report"
+output:
+  html_document:
+    toc: no
+    theme: cosmo
+    code_folding: hide
+params:
+  symbol: GOOG
+  startdate:
+    label: Starting date
+    value: 2010-01-01
+    input: date
+  enddate:
+    label: Ending date
+    value: !r Sys.Date()
+    input: date
+---
+  
+# Stock Report: `r params$symbol` (`r Sys.Date()`) 
+
+<hr>
+
+## Summary {.tabset}
+
+```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(tidyquant)
+library(timetk)
+library(reactable)
+
+knitr::opts_chunk$set(message = FALSE, warning = FALSE, comment = NA)
+```
+
+
+```{r}
+prices <- tq_get(params$symbol, "stock.prices") %>% 
+  filter_by_time(date, params$startdate, params$enddate)
+
+close <- Cl(last(prices))
+open <- Op(last(prices))
+
+raw_fname <- paste0(params$symbol, "_", Sys.Date(), ".csv")
+write.csv(prices, raw_fname)
+
+rmarkdown::output_metadata$set(rsc_output_files = list(raw_fname))
+```
+
+The stock _`r params$symbol`_ closed __`r ifelse(close>open,'up','down')`__ at __$`r round(close, 2)`__ per share yesterday.
+
+This report contains data from `r params$startdate` to `r params$enddate`
+
+<br>
+
+### Price History Chart
+
+The chart below is made with the `timetk` R package, which helps easily draw great-looking static (`ggplot2`) and interactive (`plotly`) time series charts.
+
+
+```{r}
+plot_time_series(prices, date, adjusted, 
+                 .title = paste0("Adjusted closing price for ", params$symbol),
+                 .plotly_slider = TRUE)
+```
+
+### Price Data
+
+The table below displays the daily price data for `r params$symbol` between `r params$startdate` and `r params$enddate`. A concise, interactive table is created with the `reactable` package. 
+
+  
+```{r}
+reactable(prices, 
+          resizable = TRUE,
+          filterable = TRUE,
+          searchable = TRUE)
+```
+
+[Click here to download raw data](`r raw_fname`)

@@ -1,0 +1,12 @@
+name: connect-example-main
+title: connect-example-main
+username: nick
+account: nick
+server: colorado.rstudio.com
+hostUrl: https://colorado.rstudio.com/rsc/__api__
+appId: 9005
+bundleId: 44601
+url: https://colorado.rstudio.com/rsc/content/4549c1c3-1e59-4531-853c-f735200ecbab/
+when: 1617818178.69436
+asMultiple: FALSE
+asStatic: FALSE
